@@ -3,7 +3,6 @@
   "appName": "Solace",
   "webDir": "www",
   "server": {
-    "url": "http://192.168.1.6:8080",
-    "cleartext": true
+    "url": "https://solace-app-ubew.onrender.com"
   }
 }
