@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Acquisition Playbook — Solace</title>
+  <link rel="icon" href="assets/logo.png" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Solace" />
+  <meta name="theme-color" content="#8B9A8C" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="js/theme.js"></script>
+  <link rel="stylesheet" href="css/tokens.css" />
+</head>
+<body data-page="docs" data-title="Acquisition Playbook" class="font-sans bg-brand-50 text-ink">
+  <div id="solace-sidebar"></div>
+  <div id="solace-topbar"></div>
+
+  <main class="lg:ml-64 pt-16 px-4 sm:px-6 lg:px-8 pb-10 transition-[margin] duration-200">
+    <div class="max-w-[760px] mx-auto py-6">
+      <a href="docs.html" class="text-xs text-brand-600 font-medium">&larr; Back to Docs</a>
+
+      <div class="rounded-card bg-white shadow-card overflow-hidden mt-4">
+        <div class="p-8 pb-6 border-b border-brand-100">
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-11 h-11 rounded-xl bg-brand-100 text-brand-700 flex items-center justify-center shrink-0">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="w-5 h-5"><path d="M7 3h7l5 5v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 16.5h6"/></svg>
+            </div>
+            <div>
+              <h1 class="text-2xl font-semibold text-ink">Acquisition Playbook</h1>
+              <p class="text-xs text-ink-400 mt-0.5">Updated Aug 1, 2026 &middot; Property Acquisition</p>
+            </div>
+          </div>
+          <p class="text-sm text-ink-600 leading-relaxed">Standard process for evaluating and calling on a target property, from first contact to close.</p>
+        </div>
+
+        <div class="p-8 space-y-7">
+          <div class="flex gap-4">
+            <span class="w-7 h-7 rounded-full bg-brand-500 text-white text-xs font-semibold flex items-center justify-center shrink-0">1</span>
+            <div>
+              <h2 class="text-sm font-semibold text-ink mb-1.5">Sourcing</h2>
+              <p class="text-sm text-ink-600 leading-relaxed">Pull new landlord and agent leads weekly. Prioritize properties matching current acquisition criteria (unit count, area, condition).</p>
+            </div>
+          </div>
+
+          <div class="flex gap-4">
+            <span class="w-7 h-7 rounded-full bg-brand-500 text-white text-xs font-semibold flex items-center justify-center shrink-0">2</span>
+            <div>
+              <h2 class="text-sm font-semibold text-ink mb-1.5">The Call</h2>
+              <ul class="list-disc list-inside text-sm text-ink-600 space-y-1 leading-relaxed">
+                <li>Confirm ownership and intent to sell or lease</li>
+                <li>Log the call immediately with the correct status</li>
+                <li>If they need time — mark <strong>Will Get Back To Us</strong> and follow up in 5 business days</li>
+                <li>If a time is agreed — mark <strong>Callback</strong> with the date/time in notes</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="flex gap-4">
+            <span class="w-7 h-7 rounded-full bg-brand-500 text-white text-xs font-semibold flex items-center justify-center shrink-0">3</span>
+            <div>
+              <h2 class="text-sm font-semibold text-ink mb-1.5">Moving to Target</h2>
+              <p class="text-sm text-ink-600 leading-relaxed">Once interest is confirmed, add the property to the Pipeline as a Lead with an ARV and repair estimate. Move it through Contacted → Negotiating → Under Contract as the deal progresses.</p>
+            </div>
+          </div>
+
+          <div class="flex gap-4">
+            <span class="w-7 h-7 rounded-full bg-brand-500 text-white text-xs font-semibold flex items-center justify-center shrink-0">4</span>
+            <div class="flex-1">
+              <h2 class="text-sm font-semibold text-ink mb-1.5">Daily Targets</h2>
+              <p class="text-sm text-ink-600 leading-relaxed mb-3">Every team member is expected to hit the daily call target set in OKR Goals before end of day. Progress is tracked live on the Property Acquisition dashboard.</p>
+              <div class="rounded-lg bg-brand-100 border-l-4 border-brand-500 px-4 py-3">
+                <p class="text-xs font-semibold text-brand-700 mb-1">Rule of thumb</p>
+                <p class="text-xs text-brand-700 leading-relaxed">If a lead sits in "Will Get Back To Us" or "Callback" for more than 3 days without a follow-up, it shows on the Follow-Ups Due list — check it first thing every morning.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/store.js"></script>
+  <script src="js/shell.js"></script>
+</body>
+</html>

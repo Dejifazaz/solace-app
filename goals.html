@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>OKR Goals — Solace</title>
+  <link rel="icon" href="assets/logo.png" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Solace" />
+  <meta name="theme-color" content="#8B9A8C" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="js/theme.js"></script>
+  <link rel="stylesheet" href="css/tokens.css" />
+</head>
+<body data-page="goals" data-title="OKR Goals" class="font-sans bg-brand-50 text-ink">
+  <div id="solace-sidebar"></div>
+  <div id="solace-topbar"></div>
+
+  <main class="lg:ml-64 pt-16 px-4 sm:px-6 lg:px-8 pb-10 transition-[margin] duration-200">
+    <div class="max-w-[1200px] mx-auto py-6 space-y-6">
+
+      <p class="text-sm text-ink-400 max-w-2xl">Daily, weekly and monthly targets drive the Property Acquisition dashboard. Update them here and every teamspace reflects the change.</p>
+
+      <!-- Daily / Weekly / Monthly -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+        <div class="rounded-card bg-white shadow-card p-6">
+          <p class="text-xs font-semibold text-brand-600 uppercase tracking-wider mb-1">Daily</p>
+          <h3 class="text-lg font-semibold text-ink mb-4">Today's Target</h3>
+          <div id="daily-actual-mount" class="mb-4"></div>
+          <label class="text-xs text-ink-400 block mb-1">Calls target</label>
+          <input id="daily-calls-target" type="number" min="0" class="w-full text-sm px-3 py-2 rounded-lg border border-brand-200 focus:outline-none focus:ring-2 focus:ring-brand-300" />
+        </div>
+
+        <div class="rounded-card bg-white shadow-card p-6">
+          <p class="text-xs font-semibold text-brand-600 uppercase tracking-wider mb-1">Weekly</p>
+          <h3 class="text-lg font-semibold text-ink mb-4">This Week</h3>
+          <div id="weekly-actual-mount" class="mb-4"></div>
+          <label class="text-xs text-ink-400 block mb-1">Calls target</label>
+          <input id="weekly-calls-target" type="number" min="0" class="w-full text-sm px-3 py-2 rounded-lg border border-brand-200 mb-3 focus:outline-none focus:ring-2 focus:ring-brand-300" />
+          <label class="text-xs text-ink-400 block mb-1">Deals target</label>
+          <input id="weekly-deals-target" type="number" min="0" class="w-full text-sm px-3 py-2 rounded-lg border border-brand-200 focus:outline-none focus:ring-2 focus:ring-brand-300" />
+        </div>
+
+        <div class="rounded-card bg-white shadow-card p-6">
+          <p class="text-xs font-semibold text-brand-600 uppercase tracking-wider mb-1">Monthly</p>
+          <h3 class="text-lg font-semibold text-ink mb-4">This Month</h3>
+          <div id="monthly-actual-mount" class="mb-4"></div>
+          <label class="text-xs text-ink-400 block mb-1">Calls target</label>
+          <input id="monthly-calls-target" type="number" min="0" class="w-full text-sm px-3 py-2 rounded-lg border border-brand-200 mb-3 focus:outline-none focus:ring-2 focus:ring-brand-300" />
+          <label class="text-xs text-ink-400 block mb-1">Properties acquired target</label>
+          <input id="monthly-props-target" type="number" min="0" class="w-full text-sm px-3 py-2 rounded-lg border border-brand-200 focus:outline-none focus:ring-2 focus:ring-brand-300" />
+        </div>
+      </div>
+
+      <button id="save-goals" class="text-sm font-medium bg-brand-500 hover:bg-brand-600 text-white rounded-lg px-5 py-2.5 transition-colors">Save Targets</button>
+      <span id="save-confirm" class="text-sm text-brand-600 ml-3 opacity-0 transition-opacity">Saved</span>
+
+      <!-- 3 Year Plan -->
+      <div class="rounded-card bg-white shadow-card p-6">
+        <p class="text-xs font-semibold text-brand-600 uppercase tracking-wider mb-1">3-Year Plan</p>
+        <h3 class="text-lg font-semibold text-ink mb-4">Where Solace Is Headed</h3>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+          <div>
+            <label class="text-xs text-ink-400 block mb-1">Target properties (3-year)</label>
+            <input id="ty-target-properties" type="number" min="0" class="w-full text-sm px-3 py-2 rounded-lg border border-brand-200 focus:outline-none focus:ring-2 focus:ring-brand-300" />
+          </div>
+          <div>
+            <label class="text-xs text-ink-400 block mb-1">Target revenue (3-year, USD)</label>
+            <input id="ty-target-revenue" type="number" min="0" step="1000" class="w-full text-sm px-3 py-2 rounded-lg border border-brand-200 focus:outline-none focus:ring-2 focus:ring-brand-300" />
+          </div>
+        </div>
+
+        <p class="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-2">Milestones</p>
+        <div id="milestones-mount" class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4"></div>
+
+        <button id="save-3yr" class="text-sm font-medium bg-brand-500 hover:bg-brand-600 text-white rounded-lg px-5 py-2.5 transition-colors">Save 3-Year Plan</button>
+        <span id="save-3yr-confirm" class="text-sm text-brand-600 ml-3 opacity-0 transition-opacity">Saved</span>
+      </div>
+
+    </div>
+  </main>
+
+  <script src="js/store.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/shell.js"></script>
+  <script>
+    const TODAY_STR = todayStr();
+
+    function render() {
+      const goals = Store.get("goals", {});
+      const calls = Store.get("calls", []);
+      const properties = Store.get("properties", []);
+
+      const todayCalls = calls.filter((c) => c.date === TODAY_STR).length;
+      const weekCalls = calls.length;
+      const dealsInMotion = properties.filter((p) => p.status === "under offer" || p.status === "negotiating").length;
+      const monthCalls = calls.length;
+      const acquired = properties.filter((p) => p.status === "acquired").length;
+
+      document.getElementById("daily-actual-mount").innerHTML = `
+        <p class="text-3xl font-bold text-ink">${todayCalls}<span class="text-base font-normal text-ink-400"> / ${goals.daily.callsTarget}</span></p>
+        ${progressBar((todayCalls / goals.daily.callsTarget) * 100)}
+      `;
+      document.getElementById("weekly-actual-mount").innerHTML = `
+        <p class="text-3xl font-bold text-ink">${weekCalls}<span class="text-base font-normal text-ink-400"> / ${goals.weekly.callsTarget} calls</span></p>
+        ${progressBar((weekCalls / goals.weekly.callsTarget) * 100)}
+        <p class="text-xs text-ink-400 mt-2">${dealsInMotion} / ${goals.weekly.dealsTarget} deals in motion</p>
+      `;
+      document.getElementById("monthly-actual-mount").innerHTML = `
+        <p class="text-3xl font-bold text-ink">${monthCalls}<span class="text-base font-normal text-ink-400"> / ${goals.monthly.callsTarget} calls</span></p>
+        ${progressBar((monthCalls / goals.monthly.callsTarget) * 100)}
+        <p class="text-xs text-ink-400 mt-2">${acquired} / ${goals.monthly.propertiesAcquiredTarget} properties acquired</p>
+      `;
+
+      document.getElementById("daily-calls-target").value = goals.daily.callsTarget;
+      document.getElementById("weekly-calls-target").value = goals.weekly.callsTarget;
+      document.getElementById("weekly-deals-target").value = goals.weekly.dealsTarget;
+      document.getElementById("monthly-calls-target").value = goals.monthly.callsTarget;
+      document.getElementById("monthly-props-target").value = goals.monthly.propertiesAcquiredTarget;
+
+      document.getElementById("ty-target-properties").value = goals.threeYear.targetProperties;
+      document.getElementById("ty-target-revenue").value = goals.threeYear.targetRevenue;
+
+      document.getElementById("milestones-mount").innerHTML = goals.threeYear.milestones
+        .map(
+          (m, i) => `
+        <div class="rounded-xl border border-brand-100 p-4 space-y-2">
+          <label class="text-[11px] text-ink-400 block">Year
+            <input type="number" data-milestone-index="${i}" data-milestone-field="year" value="${m.year}" class="milestone-input w-full text-sm px-2 py-1.5 mt-0.5 rounded-lg border border-brand-200 focus:outline-none focus:ring-2 focus:ring-brand-300" />
+          </label>
+          <label class="text-[11px] text-ink-400 block">Label
+            <input type="text" data-milestone-index="${i}" data-milestone-field="label" value="${m.label}" class="milestone-input w-full text-sm px-2 py-1.5 mt-0.5 rounded-lg border border-brand-200 focus:outline-none focus:ring-2 focus:ring-brand-300" />
+          </label>
+          <label class="text-[11px] text-ink-400 block">Properties target
+            <input type="number" min="0" data-milestone-index="${i}" data-milestone-field="target" value="${m.target}" class="milestone-input w-full text-sm px-2 py-1.5 mt-0.5 rounded-lg border border-brand-200 focus:outline-none focus:ring-2 focus:ring-brand-300" />
+          </label>
+        </div>
+      `
+        )
+        .join("");
+    }
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      await Store.ready;
+      render();
+
+      document.getElementById("save-goals").addEventListener("click", () => {
+        Store.update("goals", (goals) => ({
+          ...goals,
+          daily: { ...goals.daily, callsTarget: parseInt(document.getElementById("daily-calls-target").value, 10) || 0 },
+          weekly: {
+            ...goals.weekly,
+            callsTarget: parseInt(document.getElementById("weekly-calls-target").value, 10) || 0,
+            dealsTarget: parseInt(document.getElementById("weekly-deals-target").value, 10) || 0,
+          },
+          monthly: {
+            ...goals.monthly,
+            callsTarget: parseInt(document.getElementById("monthly-calls-target").value, 10) || 0,
+            propertiesAcquiredTarget: parseInt(document.getElementById("monthly-props-target").value, 10) || 0,
+          },
+        }));
+        render();
+        const confirm = document.getElementById("save-confirm");
+        confirm.classList.remove("opacity-0");
+        setTimeout(() => confirm.classList.add("opacity-0"), 1500);
+      });
+
+      document.getElementById("save-3yr").addEventListener("click", () => {
+        const milestoneInputs = document.querySelectorAll(".milestone-input");
+        const milestones = [{}, {}, {}];
+        milestoneInputs.forEach((inp) => {
+          const i = parseInt(inp.getAttribute("data-milestone-index"), 10);
+          const field = inp.getAttribute("data-milestone-field");
+          milestones[i][field] = field === "label" ? inp.value.trim() : parseInt(inp.value, 10) || 0;
+        });
+        Store.update("goals", (goals) => ({
+          ...goals,
+          threeYear: {
+            ...goals.threeYear,
+            targetProperties: parseInt(document.getElementById("ty-target-properties").value, 10) || 0,
+            targetRevenue: parseInt(document.getElementById("ty-target-revenue").value, 10) || 0,
+            milestones,
+          },
+        }));
+        render();
+        const confirm = document.getElementById("save-3yr-confirm");
+        confirm.classList.remove("opacity-0");
+        setTimeout(() => confirm.classList.add("opacity-0"), 1500);
+      });
+    });
+  </script>
+</body>
+</html>

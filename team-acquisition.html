@@ -1,0 +1,604 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Property Acquisition — Solace</title>
+  <link rel="icon" href="assets/logo.png" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Solace" />
+  <meta name="theme-color" content="#8B9A8C" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="js/theme.js"></script>
+  <link rel="stylesheet" href="css/tokens.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* Market Comps card only — mirrors Guesty PriceOptimizer's font + accent
+       palette without touching Solace's sage-green brand used everywhere else. */
+    .comps-guesty { font-family: "Figtree", ui-sans-serif, system-ui, sans-serif; }
+    .comps-guesty .gst-primary-text { color: hsl(171 100% 24%); }
+    .comps-guesty .gst-badge-below { background: hsl(139 51% 93%); color: hsl(143 78% 36%); }
+    .comps-guesty .gst-badge-above { background: hsl(48 96% 89%); color: hsl(32 95% 44%); }
+    .comps-guesty .gst-bar-track { background: hsl(240 5% 96%); }
+    .comps-guesty .gst-bar-fill { background: hsl(227 75% 61%); }
+  </style>
+</head>
+<body data-page="team-acquisition" data-title="Property Acquisition" class="font-sans bg-brand-50 text-ink">
+  <div id="solace-sidebar"></div>
+  <div id="solace-topbar"></div>
+
+  <main class="lg:ml-64 pt-16 px-4 sm:px-6 lg:px-8 pb-10 transition-[margin] duration-200">
+    <div class="max-w-[1400px] mx-auto py-6">
+
+      <div class="grid grid-cols-1 xl:grid-cols-[1fr_340px] gap-6 items-start">
+
+        <!-- LEFT: main content -->
+        <div class="space-y-6">
+
+          <!-- Overview + feature cards row -->
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            <!-- Overview card -->
+            <div class="lg:col-span-2 rounded-card bg-white shadow-card p-6">
+              <div class="flex items-start justify-between mb-2">
+                <div>
+                  <p class="text-xs font-medium text-brand-600 uppercase tracking-wider">Today's Target</p>
+                  <h2 class="text-2xl font-semibold text-ink mt-0.5">Landlord &amp; Agent Calls</h2>
+                </div>
+                <span class="text-xs font-medium text-ink-400 bg-brand-50 px-3 py-1.5 rounded-full">Last 7 Days</span>
+              </div>
+
+              <div class="flex items-end gap-3 mt-4 mb-2">
+                <span id="daily-progress-value" class="text-4xl font-bold text-ink">0</span>
+                <span id="daily-progress-target" class="text-lg text-ink-400 mb-1">/ 15 calls today</span>
+              </div>
+              <div class="mb-4" style="max-width: 260px;" id="daily-progress-bar-mount"></div>
+
+              <div id="chart-mount" class="h-44 w-full"></div>
+
+              <div class="grid grid-cols-3 gap-4 mt-6 pt-6 border-t border-brand-100">
+                <div>
+                  <p class="text-lg font-semibold text-ink" id="stat-calls-today">0</p>
+                  <p class="text-xs text-ink-400">Calls Today</p>
+                </div>
+                <div>
+                  <p class="text-lg font-semibold text-ink" id="stat-calls-week">0</p>
+                  <p class="text-xs text-ink-400">Calls This Week</p>
+                </div>
+                <div>
+                  <p class="text-lg font-semibold text-ink" id="stat-monthly-target">0</p>
+                  <p class="text-xs text-ink-400">Monthly Target</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Feature cards -->
+            <div class="flex flex-col gap-6">
+              <div class="rounded-card bg-gradient-to-br from-brand-400 to-brand-600 text-white shadow-card-lg p-5">
+                <div class="flex items-center justify-between">
+                  <p class="text-sm font-medium opacity-90">Callback Queue</p>
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="w-5 h-5 opacity-90"><path d="M4 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L14 13l5 2v4a2 2 0 0 1-2 2C9.5 21 3 14.5 3 6a2 2 0 0 1 1-2Z"/></svg>
+                </div>
+                <p class="text-3xl font-bold mt-3" id="callback-count">0</p>
+                <p class="text-xs opacity-80 mt-1">callbacks due</p>
+              </div>
+
+              <div class="rounded-card bg-gradient-to-br from-ink-700 to-ink-900 text-white shadow-card-lg p-5 flex-1">
+                <p class="text-sm font-medium opacity-90 mb-3">Next Callback</p>
+                <div id="next-callback-mount">
+                  <p class="text-sm opacity-70">No callbacks queued</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Follow-ups due -->
+          <div class="rounded-card bg-white shadow-card p-6" id="followups-section">
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="text-sm font-semibold text-ink">Follow-Ups Due</h3>
+              <span class="text-xs text-ink-400">Overdue 3+ days</span>
+            </div>
+            <div id="followups-mount" class="flex flex-col divide-y divide-brand-50"></div>
+          </div>
+
+          <!-- Three progress cards -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-6" id="progress-cards-mount"></div>
+        </div>
+
+        <!-- RIGHT: call log + properties -->
+        <div class="flex flex-col gap-6">
+
+          <div class="rounded-card bg-white shadow-card p-5">
+            <div class="flex items-center justify-between mb-1">
+              <h3 class="text-sm font-semibold text-ink">Call Log</h3>
+              <button id="toggle-log-form" class="text-xs font-medium text-brand-700 bg-brand-100 hover:bg-brand-200 px-2.5 py-1 rounded-full transition-colors">+ Log Call</button>
+            </div>
+            <div class="flex items-center gap-4 mt-3 mb-1 border-b border-brand-100">
+              <button data-tab="today" class="log-tab text-xs font-medium pb-2 border-b-2 border-brand-500 text-ink px-1">Today</button>
+              <button data-tab="all" class="log-tab text-xs font-medium pb-2 border-b-2 border-transparent text-ink-400 px-1">All</button>
+            </div>
+
+            <form id="log-call-form" class="hidden flex-col gap-2 mt-3 pb-3 border-b border-brand-100">
+              <input required id="log-name" type="text" placeholder="Landlord / agent name" class="text-sm px-3 py-2 rounded-lg border border-brand-200 focus:outline-none focus:ring-2 focus:ring-brand-300" />
+              <input required id="log-address" type="text" placeholder="Property address" class="text-sm px-3 py-2 rounded-lg border border-brand-200 focus:outline-none focus:ring-2 focus:ring-brand-300" />
+              <select id="log-status" class="text-sm px-3 py-2 rounded-lg border border-brand-200 focus:outline-none focus:ring-2 focus:ring-brand-300">
+                <option value="will_get_back">Will Get Back To Us</option>
+                <option value="in_progress">In Progress</option>
+                <option value="not_in_progress">Not In Progress</option>
+                <option value="callback">Callback</option>
+              </select>
+              <button type="submit" class="text-sm font-medium bg-brand-500 hover:bg-brand-600 text-white rounded-lg py-2 mt-1 transition-colors">Save Call</button>
+            </form>
+
+            <div id="call-log-mount" class="flex flex-col divide-y divide-brand-50 mt-1"></div>
+          </div>
+
+          <div class="rounded-card bg-white shadow-card p-5">
+            <h3 class="text-sm font-semibold text-ink mb-3">Properties</h3>
+            <div class="flex items-center gap-4 mb-3">
+              <div class="flex-1">
+                <p class="text-xl font-bold text-ink" id="owned-count">0</p>
+                <p class="text-xs text-ink-400">Owned</p>
+              </div>
+              <div class="flex-1">
+                <p class="text-xl font-bold text-ink" id="target-count">0</p>
+                <p class="text-xs text-ink-400">Targets</p>
+              </div>
+            </div>
+            <div id="owned-vs-target-bar" class="mb-4"></div>
+            <p class="text-xs font-semibold text-ink-400 uppercase tracking-wider mb-2">Top Targets</p>
+            <div id="properties-mount" class="flex flex-col gap-2"></div>
+            <a href="#pipeline-board" class="text-xs font-medium text-brand-600 mt-3 inline-block">View full pipeline &rarr;</a>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Property Pipeline -->
+      <div class="rounded-card bg-white shadow-card p-6 mt-6 overflow-x-auto">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-sm font-semibold text-ink">Property Pipeline</h3>
+          <button id="toggle-pipeline-form" class="text-xs font-medium text-brand-700 bg-brand-100 hover:bg-brand-200 px-2.5 py-1 rounded-full transition-colors">+ Add Lead</button>
+        </div>
+
+        <form id="pipeline-form" class="hidden grid-cols-1 sm:grid-cols-4 gap-2 mb-5 pb-5 border-b border-brand-100">
+          <input required id="pl-address" type="text" placeholder="Property address" class="text-sm px-3 py-2 rounded-lg border border-brand-200 focus:outline-none focus:ring-2 focus:ring-brand-300" />
+          <input id="pl-arv" type="number" placeholder="ARV" class="text-sm px-3 py-2 rounded-lg border border-brand-200 focus:outline-none focus:ring-2 focus:ring-brand-300" />
+          <input id="pl-repairs" type="number" placeholder="Repair estimate" class="text-sm px-3 py-2 rounded-lg border border-brand-200 focus:outline-none focus:ring-2 focus:ring-brand-300" />
+          <button type="submit" class="text-sm font-medium bg-brand-500 hover:bg-brand-600 text-white rounded-lg py-2 transition-colors">Add to Pipeline</button>
+        </form>
+
+        <div class="grid grid-cols-5 gap-4 min-w-[900px]" id="pipeline-board"></div>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/store.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/charts.js"></script>
+  <script src="js/shell.js"></script>
+  <script>
+    let currentTab = "today";
+    const TODAY_STR = todayStr();
+
+    function weeklyTrend(calls) {
+      const days = [];
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        const dateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+        days.push({ label: d.toLocaleDateString("en-US", { weekday: "short" }), value: calls.filter((c) => c.date === dateStr).length });
+      }
+      return days;
+    }
+
+    function renderCallLog() {
+      const calls = Store.get("calls", []);
+      const goals = Store.get("goals", {});
+      const filtered = currentTab === "today" ? calls.filter((c) => c.date === TODAY_STR) : calls;
+      const sorted = [...filtered].reverse();
+
+      document.getElementById("call-log-mount").innerHTML = sorted
+        .map(
+          (c) => `
+        <div class="flex items-center gap-3 py-3">
+          <div class="w-9 h-9 rounded-full bg-brand-100 text-brand-700 text-xs font-semibold flex items-center justify-center shrink-0">${initials(c.contactName)}</div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium text-ink truncate">${c.contactName}</p>
+            <p class="text-xs text-ink-400 truncate">${c.propertyAddress}</p>
+          </div>
+          <select data-call-id="${c.id}" class="status-select w-[122px] shrink-0 text-[11px] font-medium text-center rounded-full border-0 py-1.5 pl-2 pr-1 focus:outline-none focus:ring-2 focus:ring-brand-300 cursor-pointer appearance-none ${CALL_STATUS_META[c.status].classes}">
+            ${Object.entries(CALL_STATUS_META)
+              .map(([key, meta]) => `<option value="${key}" ${key === c.status ? "selected" : ""}>${meta.label}</option>`)
+              .join("")}
+          </select>
+        </div>
+      `
+        )
+        .join("") || `<p class="text-sm text-ink-400 py-4 text-center">No calls logged${currentTab === "today" ? " today" : ""} yet.</p>`;
+
+      document.querySelectorAll(".status-select").forEach((sel) => {
+        sel.addEventListener("change", (e) => {
+          const id = e.target.getAttribute("data-call-id");
+          Store.update("calls", (calls) => calls.map((c) => (c.id === id ? { ...c, status: e.target.value } : c)));
+          renderAll();
+        });
+      });
+    }
+
+    function renderStats() {
+      const calls = Store.get("calls", []);
+      const goals = Store.get("goals", {});
+      const properties = Store.get("properties", []);
+
+      const todayCalls = calls.filter((c) => c.date === TODAY_STR).length;
+      const weekCalls = calls.length; // seeded window is small; treat all logged calls as this week
+      const callbackCount = calls.filter((c) => c.status === "callback").length;
+      const dailyTarget = goals.daily.callsTarget;
+
+      document.getElementById("daily-progress-value").textContent = todayCalls;
+      document.getElementById("daily-progress-target").textContent = `/ ${dailyTarget} calls today`;
+      document.getElementById("daily-progress-bar-mount").innerHTML = progressBar((todayCalls / dailyTarget) * 100);
+      document.getElementById("stat-calls-today").textContent = todayCalls;
+      document.getElementById("stat-calls-week").textContent = weekCalls;
+      document.getElementById("stat-monthly-target").textContent = goals.monthly.callsTarget;
+      document.getElementById("callback-count").textContent = callbackCount;
+
+      const nextCallback = calls.find((c) => c.status === "callback");
+      document.getElementById("next-callback-mount").innerHTML = nextCallback
+        ? `
+          <p class="text-base font-semibold">${nextCallback.contactName}</p>
+          <p class="text-xs opacity-70 mb-3">${nextCallback.propertyAddress}</p>
+          <p class="text-xs opacity-60 mb-4">${nextCallback.notes || "No notes"}</p>
+          <button class="text-xs font-medium bg-white text-ink-900 rounded-full px-3 py-1.5">Call Now</button>
+        `
+        : `<p class="text-sm opacity-70">No callbacks queued</p>`;
+
+      const ownedCount = properties.filter((p) => p.type === "owned").length;
+      const targetCount = properties.filter((p) => p.type === "target").length;
+      document.getElementById("owned-count").textContent = ownedCount;
+      document.getElementById("target-count").textContent = targetCount;
+      document.getElementById("owned-vs-target-bar").innerHTML = progressBar(
+        (ownedCount / Math.max(1, ownedCount + targetCount)) * 100,
+        "bg-ink-900"
+      );
+
+      const stageLabel = (key) => (PROPERTY_STAGES.find((s) => s.key === key) || {}).label || key;
+
+      const topTargets = properties.filter((p) => p.type === "target").slice(0, 3);
+      document.getElementById("properties-mount").innerHTML =
+        topTargets
+          .map(
+            (p) => `
+        <div class="flex items-center justify-between gap-2">
+          <div class="min-w-0">
+            <p class="text-xs font-medium text-ink truncate">${p.address}</p>
+            <p class="text-[11px] text-ink-400">${stageLabel(p.stage)}</p>
+          </div>
+          <span class="text-[11px] font-medium text-brand-700 bg-brand-50 px-2 py-0.5 rounded-full shrink-0">${formatMoney(p.offerPrice ?? p.estValue)}</span>
+        </div>
+      `
+          )
+          .join("") || `<p class="text-xs text-ink-400">No target properties yet — add one below.</p>`;
+
+      // Three progress cards: weekly calls, monthly deals, properties acquired
+      const weeklyPct = (weekCalls / goals.weekly.callsTarget) * 100;
+      const dealsInMotion = properties.filter((p) => p.stage === "negotiating" || p.stage === "under_contract").length;
+      const dealsPct = (dealsInMotion / goals.monthly.dealsTarget) * 100;
+      const acquired = properties.filter((p) => p.stage === "closed" && p.closedAt && p.closedAt.slice(0, 7) === goals.monthly.month).length;
+      const acquiredPct = (acquired / goals.monthly.propertiesAcquiredTarget) * 100;
+
+      document.getElementById("progress-cards-mount").innerHTML = `
+        ${progressCard("Weekly Calls", `${weekCalls} / ${goals.weekly.callsTarget} calls`, weeklyPct, "phone")}
+        ${progressCard("Monthly Deals", `${dealsInMotion} / ${goals.monthly.dealsTarget} in motion`, dealsPct, "target")}
+        ${progressCard("Properties Acquired", `${acquired} / ${goals.monthly.propertiesAcquiredTarget} this month`, acquiredPct, "building")}
+      `;
+
+      renderLineChart("chart-mount", weeklyTrend(calls), { width: 600, height: 176 });
+    }
+
+    function progressCard(title, sub, pct, iconName) {
+      const icons = {
+        phone: '<path d="M4 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L14 13l5 2v4a2 2 0 0 1-2 2C9.5 21 3 14.5 3 6a2 2 0 0 1 1-2Z"/>',
+        target: '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/>',
+        building: '<rect x="4" y="3" width="16" height="18" rx="1"/><path d="M9 8h1M14 8h1M9 12h1M14 12h1"/>',
+      };
+      return `
+        <div class="rounded-card bg-white shadow-card p-5">
+          <div class="w-10 h-10 rounded-xl bg-brand-100 text-brand-700 flex items-center justify-center mb-3">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="w-5 h-5">${icons[iconName]}</svg>
+          </div>
+          <p class="text-sm font-semibold text-ink">${title}</p>
+          <p class="text-xs text-ink-400 mb-3">${sub}</p>
+          ${progressBar(pct)}
+          <p class="text-[11px] text-ink-400 mt-2">${Number.isFinite(pct) ? Math.min(100, Math.round(pct)) : 0}% of target</p>
+        </div>
+      `;
+    }
+
+    function renderFollowups() {
+      const calls = Store.get("calls", []);
+      const overdue = calls
+        .filter((c) => (c.status === "will_get_back" || c.status === "callback") && daysSince(c.date) >= FOLLOWUP_THRESHOLD_DAYS)
+        .sort((a, b) => daysSince(b.date) - daysSince(a.date));
+
+      document.getElementById("followups-mount").innerHTML =
+        overdue
+          .map(
+            (c) => `
+        <div class="flex items-center justify-between gap-3 py-3">
+          <div class="flex items-center gap-3 min-w-0">
+            <div class="w-9 h-9 rounded-full bg-amber-100 text-amber-800 text-xs font-semibold flex items-center justify-center shrink-0">${initials(c.contactName)}</div>
+            <div class="min-w-0">
+              <p class="text-sm font-medium text-ink truncate">${c.contactName}</p>
+              <p class="text-xs text-ink-400 truncate">${c.propertyAddress}</p>
+            </div>
+          </div>
+          <div class="text-right shrink-0">
+            ${statusPill(c.status)}
+            <p class="text-[11px] text-amber-700 font-medium mt-1">${daysSince(c.date)}d overdue</p>
+          </div>
+        </div>
+      `
+          )
+          .join("") || `<p class="text-sm text-ink-400 py-2">You're all caught up — no follow-ups overdue.</p>`;
+    }
+
+    let openCalcId = null;
+    let openCompsId = null;
+
+    function compsSummary(p) {
+      const comps = p.comps || [];
+      if (!comps.length) return "";
+      const subject = p.offerPrice ?? p.arv;
+      const avg = comps.reduce((sum, c) => sum + c.price, 0) / comps.length;
+      const maxVal = Math.max(avg, subject ?? 0, ...comps.map((c) => c.price));
+      const diffPct = subject != null ? Math.round(((subject - avg) / avg) * 100) : null;
+
+      const bars = comps
+        .map(
+          (c) => `
+        <div class="flex items-center gap-2">
+          <span class="text-[10px] text-ink-400 w-16 truncate" title="${c.address}">${c.address.split(",")[0]}</span>
+          <div class="flex-1 h-1.5 rounded-full gst-bar-track overflow-hidden"><div class="h-full rounded-full gst-bar-fill" style="width:${(c.price / maxVal) * 100}%"></div></div>
+          <span class="text-[10px] text-ink-500 w-14 text-right shrink-0">${formatMoney(c.price)}</span>
+        </div>
+      `
+        )
+        .join("");
+
+      return `
+        <div class="comps-guesty rounded-lg bg-white border border-brand-100 p-2 space-y-1.5 mb-2">
+          <div class="flex items-center justify-between">
+            <p class="text-[11px] text-ink-400">Avg comp price</p>
+            <p class="text-xs font-semibold gst-primary-text">${formatMoney(avg)}</p>
+          </div>
+          ${
+            diffPct != null
+              ? `<span class="inline-flex text-[10px] font-medium px-1.5 py-0.5 rounded-full ${diffPct <= 0 ? "gst-badge-below" : "gst-badge-above"}">Your price ${Math.abs(diffPct)}% ${diffPct <= 0 ? "below" : "above"} avg</span>`
+              : ""
+          }
+          <div class="space-y-1 pt-1">${bars}</div>
+        </div>
+      `;
+    }
+
+    function pipelineCard(p) {
+      const mao = p.arv != null && p.repairEstimate != null ? p.arv * 0.7 - p.repairEstimate : null;
+      const margin = p.arv != null && p.repairEstimate != null && p.offerPrice != null ? p.arv - p.repairEstimate - p.offerPrice : null;
+      const isOpen = openCalcId === p.id;
+      const isCompsOpen = openCompsId === p.id;
+      return `
+        <div class="rounded-xl border border-brand-100 p-3 bg-brand-50/40">
+          <p class="text-xs font-semibold text-ink truncate">${p.address}</p>
+          <p class="text-[11px] text-ink-400 mb-2">${formatMoney(p.offerPrice ?? p.estValue)}</p>
+          <select data-prop-id="${p.id}" class="pipeline-stage-select w-full text-[11px] rounded-lg border border-brand-200 px-2 py-1 mb-2">
+            ${PROPERTY_STAGES.map((s) => `<option value="${s.key}" ${s.key === p.stage ? "selected" : ""}>${s.label}</option>`).join("")}
+          </select>
+          <button type="button" data-calc-toggle="${p.id}" class="calc-toggle text-[11px] font-medium text-brand-600">${isOpen ? "Hide" : "Deal"} Calculator ${isOpen ? "▴" : "▾"}</button>
+          <div class="${isOpen ? "" : "hidden"} mt-2 space-y-1.5">
+            <label class="text-[10px] text-ink-400">ARV</label>
+            <input type="number" data-field="arv" data-prop-id="${p.id}" value="${p.arv ?? ""}" class="calc-input w-full text-xs rounded-md border border-brand-200 px-2 py-1" />
+            <label class="text-[10px] text-ink-400">Repair Estimate</label>
+            <input type="number" data-field="repairEstimate" data-prop-id="${p.id}" value="${p.repairEstimate ?? ""}" class="calc-input w-full text-xs rounded-md border border-brand-200 px-2 py-1" />
+            <label class="text-[10px] text-ink-400">Offer Price</label>
+            <input type="number" data-field="offerPrice" data-prop-id="${p.id}" value="${p.offerPrice ?? ""}" class="calc-input w-full text-xs rounded-md border border-brand-200 px-2 py-1" />
+            <div class="text-[11px] pt-1.5 mt-1 border-t border-brand-100">
+              <p class="text-ink-400">Max Offer (70% rule): <span class="font-semibold text-ink">${mao != null ? formatMoney(mao) : "—"}</span></p>
+              <p class="text-ink-400">Est. Margin: <span class="font-semibold ${margin != null && margin < 0 ? "text-red-600" : "text-brand-700"}">${margin != null ? formatMoney(margin) : "—"}</span></p>
+            </div>
+          </div>
+          <button type="button" data-comps-toggle="${p.id}" class="comps-toggle comps-guesty text-[11px] font-medium gst-primary-text mt-1.5 block">${isCompsOpen ? "Hide" : "Market"} Comps ${isCompsOpen ? "▴" : "▾"}</button>
+          <div class="comps-guesty ${isCompsOpen ? "" : "hidden"} mt-2">
+            ${compsSummary(p) || `<p class="text-[11px] text-ink-400 mb-2">No comps added yet.</p>`}
+            <div class="flex flex-col gap-1 mb-2">
+              ${(p.comps || [])
+                .map(
+                  (c) => `
+                <div class="flex items-center justify-between gap-1 text-[11px] bg-white rounded-md px-2 py-1 border border-brand-100">
+                  <span class="truncate flex-1" title="${c.address}">${c.address}</span>
+                  <span class="font-medium text-ink shrink-0">${formatMoney(c.price)}</span>
+                  <button type="button" data-comp-remove="${c.id}" data-prop-id="${p.id}" class="comp-remove text-ink-300 hover:text-red-500 shrink-0 leading-none">&times;</button>
+                </div>
+              `
+                )
+                .join("")}
+            </div>
+            <div class="flex gap-1">
+              <input type="text" data-prop-id="${p.id}" placeholder="Comp address" class="comp-address-input flex-1 min-w-0 text-[11px] rounded-md border border-brand-200 px-2 py-1" />
+              <input type="number" data-prop-id="${p.id}" placeholder="Price" class="comp-price-input w-16 text-[11px] rounded-md border border-brand-200 px-1 py-1" />
+              <button type="button" data-prop-id="${p.id}" class="comp-add-btn text-[11px] font-medium bg-brand-500 hover:bg-brand-600 text-white rounded-md px-2 shrink-0">+</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderPipeline() {
+      const properties = Store.get("properties", []).filter((p) => p.type === "target");
+
+      document.getElementById("pipeline-board").innerHTML = PROPERTY_STAGES.map((stage) => {
+        const items = properties.filter((p) => p.stage === stage.key);
+        return `
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wider text-ink-400 mb-3">${stage.label} <span class="text-brand-400">${items.length}</span></p>
+            <div class="flex flex-col gap-3">${items.map(pipelineCard).join("") || `<p class="text-[11px] text-ink-400">Empty</p>`}</div>
+          </div>
+        `;
+      }).join("");
+
+      document.querySelectorAll(".pipeline-stage-select").forEach((sel) => {
+        sel.addEventListener("change", (e) => {
+          const id = e.target.getAttribute("data-prop-id");
+          const newStage = e.target.value;
+          Store.update("properties", (props) =>
+            props.map((p) =>
+              p.id === id
+                ? {
+                    ...p,
+                    stage: newStage,
+                    // Closing a lead converts it from a pipeline target into an
+                    // owned property, which is what drives Operations' Income & Expenses.
+                    type: newStage === "closed" ? "owned" : p.type,
+                    closedAt: newStage === "closed" && p.stage !== "closed" ? TODAY_STR : p.closedAt,
+                  }
+                : p
+            )
+          );
+          renderAll();
+        });
+      });
+      document.querySelectorAll(".calc-toggle").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const id = btn.getAttribute("data-calc-toggle");
+          openCalcId = openCalcId === id ? null : id;
+          renderPipeline();
+        });
+      });
+      document.querySelectorAll(".calc-input").forEach((inp) => {
+        inp.addEventListener("change", (e) => {
+          const id = e.target.getAttribute("data-prop-id");
+          const field = e.target.getAttribute("data-field");
+          const val = e.target.value === "" ? null : parseFloat(e.target.value);
+          Store.update("properties", (props) => props.map((p) => (p.id === id ? { ...p, [field]: val } : p)));
+          renderAll();
+        });
+      });
+      document.querySelectorAll(".comps-toggle").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const id = btn.getAttribute("data-comps-toggle");
+          openCompsId = openCompsId === id ? null : id;
+          renderPipeline();
+        });
+      });
+      document.querySelectorAll(".comp-add-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const id = btn.getAttribute("data-prop-id");
+          const card = btn.closest(".rounded-xl");
+          const addressInput = card.querySelector(".comp-address-input");
+          const priceInput = card.querySelector(".comp-price-input");
+          const address = addressInput.value.trim();
+          const price = parseFloat(priceInput.value);
+          if (!address || !price) return;
+          Store.update("properties", (props) =>
+            props.map((p) => (p.id === id ? { ...p, comps: [...(p.comps || []), { id: uid("comp"), address, price }] } : p))
+          );
+          renderAll();
+        });
+      });
+      document.querySelectorAll(".comp-remove").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const propId = btn.getAttribute("data-prop-id");
+          const compId = btn.getAttribute("data-comp-remove");
+          Store.update("properties", (props) =>
+            props.map((p) => (p.id === propId ? { ...p, comps: (p.comps || []).filter((c) => c.id !== compId) } : p))
+          );
+          renderAll();
+        });
+      });
+    }
+
+    function renderAll() {
+      renderCallLog();
+      renderStats();
+      renderFollowups();
+      renderPipeline();
+    }
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      await Store.ready;
+      renderAll();
+
+      document.querySelectorAll(".log-tab").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          currentTab = btn.getAttribute("data-tab");
+          document.querySelectorAll(".log-tab").forEach((b) => {
+            b.classList.toggle("border-brand-500", b === btn);
+            b.classList.toggle("text-ink", b === btn);
+            b.classList.toggle("border-transparent", b !== btn);
+            b.classList.toggle("text-ink-400", b !== btn);
+          });
+          renderCallLog();
+        });
+      });
+
+      document.getElementById("toggle-log-form").addEventListener("click", () => {
+        const form = document.getElementById("log-call-form");
+        form.classList.toggle("hidden");
+        form.classList.toggle("flex");
+      });
+
+      document.getElementById("log-call-form").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const name = document.getElementById("log-name").value.trim();
+        const address = document.getElementById("log-address").value.trim();
+        const status = document.getElementById("log-status").value;
+        if (!name || !address) return;
+        Store.update("calls", (calls) => [
+          ...calls,
+          { id: uid("call"), contactName: name, contactId: null, propertyAddress: address, team: "acquisition", status, notes: "", date: TODAY_STR },
+        ]);
+        e.target.reset();
+        e.target.classList.add("hidden");
+        e.target.classList.remove("flex");
+        currentTab = "today";
+        document.querySelectorAll(".log-tab").forEach((b) => {
+          const isToday = b.getAttribute("data-tab") === "today";
+          b.classList.toggle("border-brand-500", isToday);
+          b.classList.toggle("text-ink", isToday);
+          b.classList.toggle("border-transparent", !isToday);
+          b.classList.toggle("text-ink-400", !isToday);
+        });
+        renderAll();
+      });
+
+      document.getElementById("toggle-pipeline-form").addEventListener("click", () => {
+        const form = document.getElementById("pipeline-form");
+        form.classList.toggle("hidden");
+        form.classList.toggle("grid");
+      });
+
+      document.getElementById("pipeline-form").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const address = document.getElementById("pl-address").value.trim();
+        if (!address) return;
+        const arv = document.getElementById("pl-arv").value ? parseFloat(document.getElementById("pl-arv").value) : null;
+        const repairEstimate = document.getElementById("pl-repairs").value ? parseFloat(document.getElementById("pl-repairs").value) : null;
+        Store.update("properties", (props) => [
+          ...props,
+          { id: uid("prop"), address, type: "target", stage: "lead", status: "prospecting", contactId: null, estValue: null, arv, repairEstimate, offerPrice: null, closedAt: null, notes: "", comps: [] },
+        ]);
+        e.target.reset();
+        e.target.classList.add("hidden");
+        e.target.classList.remove("grid");
+        renderAll();
+      });
+    });
+  </script>
+</body>
+</html>

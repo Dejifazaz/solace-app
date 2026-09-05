@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Tasks — Solace</title>
+  <link rel="icon" href="assets/logo.png" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Solace" />
+  <meta name="theme-color" content="#8B9A8C" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="js/theme.js"></script>
+  <link rel="stylesheet" href="css/tokens.css" />
+</head>
+<body data-page="tasks" data-title="Tasks" class="font-sans bg-brand-50 text-ink">
+  <div id="solace-sidebar"></div>
+  <div id="solace-topbar"></div>
+
+  <main class="lg:ml-64 pt-16 px-4 sm:px-6 lg:px-8 pb-10 transition-[margin] duration-200">
+    <div class="max-w-[1200px] mx-auto py-6 space-y-6">
+
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4" id="stats-mount"></div>
+
+      <div class="flex items-center justify-between flex-wrap gap-3">
+        <div class="flex items-center gap-2" id="team-filters">
+          <button data-team="all" class="team-filter text-xs font-medium px-3 py-1.5 rounded-full bg-ink-900 text-white">All Teams</button>
+          <button data-team="acquisition" class="team-filter text-xs font-medium px-3 py-1.5 rounded-full bg-white text-ink-600 border border-brand-100">Acquisition</button>
+          <button data-team="operations" class="team-filter text-xs font-medium px-3 py-1.5 rounded-full bg-white text-ink-600 border border-brand-100">Operations</button>
+          <button data-team="marketing" class="team-filter text-xs font-medium px-3 py-1.5 rounded-full bg-white text-ink-600 border border-brand-100">Marketing</button>
+        </div>
+        <button id="toggle-task-form" class="text-sm font-medium bg-brand-500 hover:bg-brand-600 text-white rounded-lg px-4 py-2 transition-colors">+ New Task</button>
+      </div>
+
+      <form id="task-form" class="hidden rounded-card bg-white shadow-card p-5 gap-3 grid grid-cols-1 sm:grid-cols-4">
+        <input required id="task-title" type="text" placeholder="Task title" class="sm:col-span-2 text-sm px-3 py-2 rounded-lg border border-brand-200 focus:outline-none focus:ring-2 focus:ring-brand-300" />
+        <select id="task-team" class="text-sm px-3 py-2 rounded-lg border border-brand-200 focus:outline-none focus:ring-2 focus:ring-brand-300">
+          <option value="acquisition">Acquisition</option>
+          <option value="operations">Operations</option>
+          <option value="marketing">Marketing</option>
+        </select>
+        <input id="task-due" type="date" class="text-sm px-3 py-2 rounded-lg border border-brand-200 focus:outline-none focus:ring-2 focus:ring-brand-300" />
+        <button type="submit" class="sm:col-span-4 text-sm font-medium bg-brand-500 hover:bg-brand-600 text-white rounded-lg py-2 transition-colors">Add Task</button>
+      </form>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div>
+          <div class="flex items-center gap-2 mb-3">
+            <span class="w-2 h-2 rounded-full bg-ink-400"></span>
+            <p class="text-xs font-semibold uppercase tracking-wider text-ink-400">To Do</p>
+            <span id="count-todo" class="text-xs text-ink-400"></span>
+          </div>
+          <div id="col-todo" class="flex flex-col gap-3"></div>
+        </div>
+        <div>
+          <div class="flex items-center gap-2 mb-3">
+            <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+            <p class="text-xs font-semibold uppercase tracking-wider text-ink-400">In Progress</p>
+            <span id="count-in_progress" class="text-xs text-ink-400"></span>
+          </div>
+          <div id="col-in_progress" class="flex flex-col gap-3"></div>
+        </div>
+        <div>
+          <div class="flex items-center gap-2 mb-3">
+            <span class="w-2 h-2 rounded-full bg-brand-500"></span>
+            <p class="text-xs font-semibold uppercase tracking-wider text-ink-400">Done</p>
+            <span id="count-done" class="text-xs text-ink-400"></span>
+          </div>
+          <div id="col-done" class="flex flex-col gap-3"></div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script src="js/store.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/shell.js"></script>
+  <script>
+    let activeTeam = "all";
+    const TODAY_STR = todayStr();
+
+    const TEAM_ACCENT = {
+      acquisition: "border-l-brand-500",
+      operations: "border-l-ink-600",
+      marketing: "border-l-amber-400",
+    };
+
+    function taskCard(t, contact) {
+      const isOverdue = t.status !== "done" && t.dueDate < TODAY_STR;
+      return `
+        <div class="rounded-card bg-white shadow-card p-4 border-l-4 ${TEAM_ACCENT[t.team] || "border-l-brand-200"}">
+          <div class="flex items-start justify-between gap-2 mb-2">
+            <p class="text-sm font-medium text-ink">${t.title}</p>
+            ${teamBadge(t.team)}
+          </div>
+          <p class="text-xs mb-2 ${isOverdue ? "text-red-600 font-medium" : "text-ink-400"}">${isOverdue ? "Overdue — " : ""}Due ${formatDate(t.dueDate)}</p>
+          ${contact ? `<p class="text-xs text-ink-400 mb-3 truncate">Linked to ${contact.name}</p>` : ""}
+          <select data-task-id="${t.id}" class="task-status-select w-full text-xs font-medium rounded-lg border border-brand-200 px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-brand-300">
+            <option value="todo" ${t.status === "todo" ? "selected" : ""}>To Do</option>
+            <option value="in_progress" ${t.status === "in_progress" ? "selected" : ""}>In Progress</option>
+            <option value="done" ${t.status === "done" ? "selected" : ""}>Done</option>
+          </select>
+        </div>
+      `;
+    }
+
+    function render() {
+      const allTasks = Store.get("tasks", []);
+      const contacts = Store.get("contacts", []);
+      const tasks = allTasks.filter((t) => activeTeam === "all" || t.team === activeTeam);
+
+      document.getElementById("stats-mount").innerHTML = `
+        ${statCard({ label: "Open Tasks", value: allTasks.filter((t) => t.status !== "done").length })}
+        ${statCard({ label: "Overdue", value: allTasks.filter((t) => t.status !== "done" && t.dueDate < TODAY_STR).length })}
+        ${statCard({ label: "Due Today", value: allTasks.filter((t) => t.status !== "done" && t.dueDate === TODAY_STR).length })}
+        ${statCard({ label: "Completed", value: allTasks.filter((t) => t.status === "done").length })}
+      `;
+
+      ["todo", "in_progress", "done"].forEach((status) => {
+        const col = document.getElementById("col-" + status);
+        const items = tasks.filter((t) => t.status === status);
+        document.getElementById("count-" + status).textContent = items.length;
+        col.innerHTML =
+          items.map((t) => taskCard(t, contacts.find((c) => c.id === t.relatedContactId))).join("") ||
+          `<p class="text-xs text-ink-400">Nothing here</p>`;
+      });
+      document.querySelectorAll(".task-status-select").forEach((sel) => {
+        sel.addEventListener("change", (e) => {
+          const id = e.target.getAttribute("data-task-id");
+          Store.update("tasks", (tasks) => tasks.map((t) => (t.id === id ? { ...t, status: e.target.value } : t)));
+          render();
+        });
+      });
+    }
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      await Store.ready;
+      document.getElementById("task-due").value = TODAY_STR;
+      render();
+
+      document.querySelectorAll(".team-filter").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          activeTeam = btn.getAttribute("data-team");
+          document.querySelectorAll(".team-filter").forEach((b) => {
+            const isActive = b === btn;
+            b.classList.toggle("bg-ink-900", isActive);
+            b.classList.toggle("text-white", isActive);
+            b.classList.toggle("bg-white", !isActive);
+            b.classList.toggle("text-ink-600", !isActive);
+            b.classList.toggle("border", !isActive);
+            b.classList.toggle("border-brand-100", !isActive);
+          });
+          render();
+        });
+      });
+
+      document.getElementById("toggle-task-form").addEventListener("click", () => {
+        const form = document.getElementById("task-form");
+        form.classList.toggle("hidden");
+        form.classList.toggle("grid");
+      });
+
+      document.getElementById("task-form").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const title = document.getElementById("task-title").value.trim();
+        const team = document.getElementById("task-team").value;
+        const dueDate = document.getElementById("task-due").value || TODAY_STR;
+        if (!title) return;
+        Store.update("tasks", (tasks) => [...tasks, { id: uid("task"), title, team, status: "todo", dueDate, relatedContactId: null }]);
+        e.target.reset();
+        e.target.classList.add("hidden");
+        e.target.classList.remove("grid");
+        render();
+      });
+    });
+  </script>
+</body>
+</html>

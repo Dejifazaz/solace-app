@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Projects — Solace</title>
+  <link rel="icon" href="assets/logo.png" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Solace" />
+  <meta name="theme-color" content="#8B9A8C" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="js/theme.js"></script>
+  <link rel="stylesheet" href="css/tokens.css" />
+</head>
+<body data-page="projects" data-title="Projects" class="font-sans bg-brand-50 text-ink">
+  <div id="solace-sidebar"></div>
+  <div id="solace-topbar"></div>
+
+  <main class="lg:ml-64 pt-16 px-4 sm:px-6 lg:px-8 pb-10 transition-[margin] duration-200">
+    <div class="max-w-[1200px] mx-auto py-6 space-y-6">
+
+      <div class="flex items-center justify-between flex-wrap gap-3">
+        <div class="flex items-center gap-2" id="team-filters">
+          <button data-team="all" class="team-filter text-xs font-medium px-3 py-1.5 rounded-full bg-ink-900 text-white">All Teams</button>
+          <button data-team="acquisition" class="team-filter text-xs font-medium px-3 py-1.5 rounded-full bg-white text-ink-600 border border-brand-100">Acquisition</button>
+          <button data-team="operations" class="team-filter text-xs font-medium px-3 py-1.5 rounded-full bg-white text-ink-600 border border-brand-100">Operations</button>
+          <button data-team="marketing" class="team-filter text-xs font-medium px-3 py-1.5 rounded-full bg-white text-ink-600 border border-brand-100">Marketing</button>
+        </div>
+        <button id="toggle-project-form" class="text-sm font-medium bg-brand-500 hover:bg-brand-600 text-white rounded-lg px-4 py-2 transition-colors">+ New Project</button>
+      </div>
+
+      <form id="project-form" class="hidden rounded-card bg-white shadow-card p-5 gap-3 grid grid-cols-1 sm:grid-cols-3">
+        <input required id="proj-name" type="text" placeholder="Project name" class="sm:col-span-3 text-sm px-3 py-2 rounded-lg border border-brand-200 focus:outline-none focus:ring-2 focus:ring-brand-300" />
+        <select id="proj-team" class="text-sm px-3 py-2 rounded-lg border border-brand-200 focus:outline-none focus:ring-2 focus:ring-brand-300">
+          <option value="acquisition">Acquisition</option>
+          <option value="operations">Operations</option>
+          <option value="marketing">Marketing</option>
+        </select>
+        <input id="proj-owner" type="text" placeholder="Owner" class="text-sm px-3 py-2 rounded-lg border border-brand-200 focus:outline-none focus:ring-2 focus:ring-brand-300" />
+        <input id="proj-progress" type="number" min="0" max="100" placeholder="Progress %" class="text-sm px-3 py-2 rounded-lg border border-brand-200 focus:outline-none focus:ring-2 focus:ring-brand-300" />
+        <label class="text-xs text-ink-400 flex flex-col gap-1">Start
+          <input required id="proj-start" type="date" class="text-sm px-3 py-2 rounded-lg border border-brand-200 focus:outline-none focus:ring-2 focus:ring-brand-300" />
+        </label>
+        <label class="text-xs text-ink-400 flex flex-col gap-1">End
+          <input required id="proj-end" type="date" class="text-sm px-3 py-2 rounded-lg border border-brand-200 focus:outline-none focus:ring-2 focus:ring-brand-300" />
+        </label>
+        <button type="submit" class="sm:col-span-3 text-sm font-medium bg-brand-500 hover:bg-brand-600 text-white rounded-lg py-2 transition-colors self-end">Add Project</button>
+      </form>
+
+      <div class="rounded-card bg-white shadow-card p-6 overflow-x-auto">
+        <div id="gantt-mount"></div>
+      </div>
+
+    </div>
+  </main>
+
+  <script src="js/store.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/gantt.js"></script>
+  <script src="js/shell.js"></script>
+  <script>
+    let activeTeam = "all";
+
+    function render() {
+      const projects = Store.get("projects", []).filter((p) => activeTeam === "all" || p.team === activeTeam);
+      renderGantt("gantt-mount", projects);
+    }
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      await Store.ready;
+      render();
+      document.querySelectorAll(".team-filter").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          activeTeam = btn.getAttribute("data-team");
+          document.querySelectorAll(".team-filter").forEach((b) => {
+            const isActive = b === btn;
+            b.classList.toggle("bg-ink-900", isActive);
+            b.classList.toggle("text-white", isActive);
+            b.classList.toggle("bg-white", !isActive);
+            b.classList.toggle("text-ink-600", !isActive);
+            b.classList.toggle("border", !isActive);
+            b.classList.toggle("border-brand-100", !isActive);
+          });
+          render();
+        });
+      });
+
+      document.getElementById("toggle-project-form").addEventListener("click", () => {
+        const form = document.getElementById("project-form");
+        form.classList.toggle("hidden");
+        form.classList.toggle("grid");
+      });
+
+      document.getElementById("project-form").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const name = document.getElementById("proj-name").value.trim();
+        const start = document.getElementById("proj-start").value;
+        const end = document.getElementById("proj-end").value;
+        if (!name || !start || !end) return;
+        if (end < start) return;
+        Store.update("projects", (projects) => [
+          ...projects,
+          {
+            id: uid("proj"),
+            name,
+            team: document.getElementById("proj-team").value,
+            start,
+            end,
+            progress: Math.max(0, Math.min(100, parseInt(document.getElementById("proj-progress").value, 10) || 0)),
+            owner: document.getElementById("proj-owner").value.trim() || "Unassigned",
+          },
+        ]);
+        e.target.reset();
+        e.target.classList.add("hidden");
+        e.target.classList.remove("grid");
+        render();
+      });
+    });
+  </script>
+</body>
+</html>

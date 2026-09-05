@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>CRM — Solace</title>
+  <link rel="icon" href="assets/logo.png" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Solace" />
+  <meta name="theme-color" content="#8B9A8C" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="js/theme.js"></script>
+  <link rel="stylesheet" href="css/tokens.css" />
+</head>
+<body data-page="crm" data-title="CRM" class="font-sans bg-brand-50 text-ink">
+  <div id="solace-sidebar"></div>
+  <div id="solace-topbar"></div>
+
+  <main class="lg:ml-64 pt-16 px-4 sm:px-6 lg:px-8 pb-10 transition-[margin] duration-200">
+    <div class="max-w-[1200px] mx-auto py-6 space-y-6">
+
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4" id="crm-stats-mount"></div>
+
+      <div class="rounded-card bg-white shadow-card p-5">
+        <h3 class="text-sm font-semibold text-ink mb-3">Lead Sources</h3>
+        <div id="source-breakdown-mount" class="flex flex-col gap-2.5"></div>
+      </div>
+
+      <div class="flex items-center justify-between flex-wrap gap-3">
+        <div class="flex items-center gap-2" id="team-filters">
+          <button data-team="all" class="team-filter text-xs font-medium px-3 py-1.5 rounded-full bg-ink-900 text-white">All Teams</button>
+          <button data-team="acquisition" class="team-filter text-xs font-medium px-3 py-1.5 rounded-full bg-white text-ink-600 border border-brand-100">Acquisition</button>
+          <button data-team="operations" class="team-filter text-xs font-medium px-3 py-1.5 rounded-full bg-white text-ink-600 border border-brand-100">Operations</button>
+          <button data-team="marketing" class="team-filter text-xs font-medium px-3 py-1.5 rounded-full bg-white text-ink-600 border border-brand-100">Marketing</button>
+        </div>
+        <button id="toggle-contact-form" class="text-sm font-medium bg-brand-500 hover:bg-brand-600 text-white rounded-lg px-4 py-2 transition-colors">+ New Contact</button>
+      </div>
+
+      <form id="contact-form" class="hidden rounded-card bg-white shadow-card p-5 gap-3 grid grid-cols-1 sm:grid-cols-3">
+        <input required id="c-name" type="text" placeholder="Full name" class="text-sm px-3 py-2 rounded-lg border border-brand-200 focus:outline-none focus:ring-2 focus:ring-brand-300" />
+        <input id="c-company" type="text" placeholder="Company" class="text-sm px-3 py-2 rounded-lg border border-brand-200 focus:outline-none focus:ring-2 focus:ring-brand-300" />
+        <input id="c-role" type="text" placeholder="Role (Landlord / Agent / ...)" class="text-sm px-3 py-2 rounded-lg border border-brand-200 focus:outline-none focus:ring-2 focus:ring-brand-300" />
+        <input id="c-email" type="email" placeholder="Email" class="text-sm px-3 py-2 rounded-lg border border-brand-200 focus:outline-none focus:ring-2 focus:ring-brand-300" />
+        <input id="c-phone" type="text" placeholder="Phone" class="text-sm px-3 py-2 rounded-lg border border-brand-200 focus:outline-none focus:ring-2 focus:ring-brand-300" />
+        <select id="c-team" class="text-sm px-3 py-2 rounded-lg border border-brand-200 focus:outline-none focus:ring-2 focus:ring-brand-300">
+          <option value="acquisition">Acquisition</option>
+          <option value="operations">Operations</option>
+          <option value="marketing">Marketing</option>
+        </select>
+        <select id="c-source" class="text-sm px-3 py-2 rounded-lg border border-brand-200 focus:outline-none focus:ring-2 focus:ring-brand-300">
+          <option value="cold_call">Cold Call</option>
+          <option value="direct_mail">Direct Mail</option>
+          <option value="referral">Referral</option>
+          <option value="driving_for_dollars">Driving for Dollars</option>
+          <option value="inbound">Inbound</option>
+          <option value="other">Other</option>
+        </select>
+        <button type="submit" class="sm:col-span-3 text-sm font-medium bg-brand-500 hover:bg-brand-600 text-white rounded-lg py-2 transition-colors">Save Contact</button>
+      </form>
+
+      <div class="rounded-card bg-white shadow-card overflow-x-auto">
+        <table class="w-full text-sm min-w-[720px]">
+          <thead>
+            <tr class="text-left text-xs font-semibold uppercase tracking-wider text-ink-400 border-b border-brand-100">
+              <th class="px-5 py-3">Name</th>
+              <th class="px-5 py-3">Company</th>
+              <th class="px-5 py-3">Role</th>
+              <th class="px-5 py-3">Team</th>
+              <th class="px-5 py-3">Source</th>
+              <th class="px-5 py-3">Last Contacted</th>
+              <th class="px-5 py-3">Activity</th>
+            </tr>
+          </thead>
+          <tbody id="contacts-mount" class="divide-y divide-brand-50"></tbody>
+        </table>
+      </div>
+
+    </div>
+  </main>
+
+  <script src="js/store.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/shell.js"></script>
+  <script>
+    let activeTeam = "all";
+
+    function render() {
+      const contacts = Store.get("contacts", []).filter((c) => activeTeam === "all" || c.team === activeTeam);
+      const calls = Store.get("calls", []);
+      const properties = Store.get("properties", []);
+      const allContacts = Store.get("contacts", []);
+
+      document.getElementById("crm-stats-mount").innerHTML = `
+        ${statCard({ label: "Total Contacts", value: allContacts.length })}
+        ${statCard({ label: "Landlords", value: allContacts.filter((c) => c.role === "Landlord").length })}
+        ${statCard({ label: "Agents", value: allContacts.filter((c) => c.role === "Agent").length })}
+        ${statCard({ label: "Warm Leads", value: allContacts.filter((c) => c.tags.includes("warm-lead")).length })}
+      `;
+
+      document.getElementById("contacts-mount").innerHTML = contacts
+        .map((c) => {
+          const relatedCalls = calls.filter((call) => call.contactId === c.id).length;
+          const relatedProps = properties.filter((p) => p.contactId === c.id).length;
+          return `
+          <tr>
+            <td class="px-5 py-3">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-brand-100 text-brand-700 text-xs font-semibold flex items-center justify-center shrink-0">${initials(c.name)}</div>
+                <span class="font-medium text-ink">${c.name}</span>
+              </div>
+            </td>
+            <td class="px-5 py-3 text-ink-600">${c.company}</td>
+            <td class="px-5 py-3 text-ink-600">${c.role}</td>
+            <td class="px-5 py-3">${teamBadge(c.team)}</td>
+            <td class="px-5 py-3">${sourcePill(c.source)}</td>
+            <td class="px-5 py-3 text-ink-400 text-xs">${new Date(c.lastContactedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</td>
+            <td class="px-5 py-3 text-ink-400 text-xs">${relatedCalls} calls &middot; ${relatedProps} properties</td>
+          </tr>
+        `;
+        })
+        .join("") || `<tr><td colspan="7" class="px-5 py-8 text-center text-ink-400">No contacts in this team yet.</td></tr>`;
+
+      renderSourceBreakdown(allContacts, properties);
+    }
+
+    function renderSourceBreakdown(allContacts, properties) {
+      const bySource = {};
+      allContacts.forEach((c) => {
+        const key = c.source || "other";
+        bySource[key] = bySource[key] || { count: 0, closed: 0 };
+        bySource[key].count += 1;
+        if (properties.some((p) => p.contactId === c.id && p.stage === "closed")) bySource[key].closed += 1;
+      });
+      const maxCount = Math.max(1, ...Object.values(bySource).map((v) => v.count));
+
+      document.getElementById("source-breakdown-mount").innerHTML =
+        Object.entries(bySource)
+          .sort((a, b) => b[1].count - a[1].count)
+          .map(([key, v]) => {
+            const meta = LEAD_SOURCE_META[key] || LEAD_SOURCE_META.other;
+            const pct = (v.count / maxCount) * 100;
+            const convPct = v.count ? Math.round((v.closed / v.count) * 100) : 0;
+            return `
+          <div>
+            <div class="flex items-center justify-between text-xs mb-1">
+              <span class="font-medium text-ink">${meta.label}</span>
+              <span class="text-ink-400">${v.count} &middot; ${convPct}% closed</span>
+            </div>
+            ${progressBar(pct)}
+          </div>
+        `;
+          })
+          .join("") || `<p class="text-sm text-ink-400">No contacts yet.</p>`;
+    }
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      await Store.ready;
+      render();
+
+      document.querySelectorAll(".team-filter").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          activeTeam = btn.getAttribute("data-team");
+          document.querySelectorAll(".team-filter").forEach((b) => {
+            const isActive = b === btn;
+            b.classList.toggle("bg-ink-900", isActive);
+            b.classList.toggle("text-white", isActive);
+            b.classList.toggle("bg-white", !isActive);
+            b.classList.toggle("text-ink-600", !isActive);
+            b.classList.toggle("border", !isActive);
+            b.classList.toggle("border-brand-100", !isActive);
+          });
+          render();
+        });
+      });
+
+      document.getElementById("toggle-contact-form").addEventListener("click", () => {
+        const form = document.getElementById("contact-form");
+        form.classList.toggle("hidden");
+        form.classList.toggle("grid");
+      });
+
+      document.getElementById("contact-form").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const name = document.getElementById("c-name").value.trim();
+        if (!name) return;
+        Store.update("contacts", (contacts) => [
+          ...contacts,
+          {
+            id: uid("contact"),
+            name,
+            company: document.getElementById("c-company").value.trim(),
+            role: document.getElementById("c-role").value.trim() || "Contact",
+            email: document.getElementById("c-email").value.trim(),
+            phone: document.getElementById("c-phone").value.trim(),
+            team: document.getElementById("c-team").value,
+            source: document.getElementById("c-source").value,
+            tags: [],
+            lastContactedAt: new Date().toISOString(),
+          },
+        ]);
+        e.target.reset();
+        e.target.classList.add("hidden");
+        e.target.classList.remove("grid");
+        render();
+      });
+    });
+  </script>
+</body>
+</html>

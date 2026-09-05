@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Marketing — Solace</title>
+  <link rel="icon" href="assets/logo.png" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Solace" />
+  <meta name="theme-color" content="#8B9A8C" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="js/theme.js"></script>
+  <link rel="stylesheet" href="css/tokens.css" />
+</head>
+<body data-page="team-marketing" data-title="Marketing" class="font-sans bg-brand-50 text-ink">
+  <div id="solace-sidebar"></div>
+  <div id="solace-topbar"></div>
+
+  <main class="lg:ml-64 pt-16 px-4 sm:px-6 lg:px-8 pb-10 transition-[margin] duration-200">
+    <div class="max-w-[1200px] mx-auto py-6 space-y-6">
+
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4" id="stats-mount"></div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6 items-start">
+        <div class="rounded-card bg-white shadow-card p-6 overflow-x-auto">
+          <h3 class="text-sm font-semibold text-ink mb-4">Active Projects</h3>
+          <div id="gantt-mount"></div>
+        </div>
+
+        <div class="rounded-card bg-white shadow-card p-5">
+          <h3 class="text-sm font-semibold text-ink mb-3">Team Contacts</h3>
+          <div id="contacts-mount" class="flex flex-col divide-y divide-brand-50"></div>
+        </div>
+      </div>
+
+      <div class="rounded-card bg-white shadow-card p-6">
+        <h3 class="text-sm font-semibold text-ink mb-4">Tasks</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wider text-ink-400 mb-3">To Do</p>
+            <div id="col-todo" class="flex flex-col gap-3"></div>
+          </div>
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wider text-ink-400 mb-3">In Progress</p>
+            <div id="col-in_progress" class="flex flex-col gap-3"></div>
+          </div>
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-wider text-ink-400 mb-3">Done</p>
+            <div id="col-done" class="flex flex-col gap-3"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script src="js/store.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/gantt.js"></script>
+  <script src="js/shell.js"></script>
+  <script>
+    const TEAM = "marketing";
+
+    function taskCard(t) {
+      return `
+        <div class="rounded-card bg-brand-50/60 p-4">
+          <p class="text-sm font-medium text-ink mb-1">${t.title}</p>
+          <p class="text-xs text-ink-400 mb-3">Due ${formatDate(t.dueDate)}</p>
+          <select data-task-id="${t.id}" class="task-status-select w-full text-xs font-medium rounded-lg border border-brand-200 px-2 py-1.5 bg-white focus:outline-none focus:ring-2 focus:ring-brand-300">
+            <option value="todo" ${t.status === "todo" ? "selected" : ""}>To Do</option>
+            <option value="in_progress" ${t.status === "in_progress" ? "selected" : ""}>In Progress</option>
+            <option value="done" ${t.status === "done" ? "selected" : ""}>Done</option>
+          </select>
+        </div>
+      `;
+    }
+
+    function render() {
+      const tasks = Store.get("tasks", []).filter((t) => t.team === TEAM);
+      const projects = Store.get("projects", []).filter((p) => p.team === TEAM);
+      const contacts = Store.get("contacts", []).filter((c) => c.team === TEAM);
+      const docs = Store.get("docs", []).filter((d) => d.team === TEAM);
+
+      document.getElementById("stats-mount").innerHTML = `
+        ${statCard({ label: "Open Tasks", value: tasks.filter((t) => t.status !== "done").length })}
+        ${statCard({ label: "Active Projects", value: projects.length })}
+        ${statCard({ label: "Docs Published", value: docs.length })}
+        ${statCard({ label: "Team Contacts", value: contacts.length })}
+      `;
+
+      renderGantt("gantt-mount", projects);
+
+      document.getElementById("contacts-mount").innerHTML = contacts
+        .map(
+          (c) => `
+        <div class="flex items-center gap-3 py-3">
+          <div class="w-8 h-8 rounded-full bg-brand-100 text-brand-700 text-xs font-semibold flex items-center justify-center shrink-0">${initials(c.name)}</div>
+          <div class="min-w-0">
+            <p class="text-sm font-medium text-ink truncate">${c.name}</p>
+            <p class="text-xs text-ink-400 truncate">${c.role} &middot; ${c.company}</p>
+          </div>
+        </div>
+      `
+        )
+        .join("") || `<p class="text-sm text-ink-400 py-2">No contacts yet.</p>`;
+
+      ["todo", "in_progress", "done"].forEach((status) => {
+        const col = document.getElementById("col-" + status);
+        col.innerHTML = tasks.filter((t) => t.status === status).map(taskCard).join("") || `<p class="text-xs text-ink-400">Nothing here</p>`;
+      });
+      document.querySelectorAll(".task-status-select").forEach((sel) => {
+        sel.addEventListener("change", (e) => {
+          const id = e.target.getAttribute("data-task-id");
+          Store.update("tasks", (tasks) => tasks.map((t) => (t.id === id ? { ...t, status: e.target.value } : t)));
+          render();
+        });
+      });
+    }
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      await Store.ready;
+      render();
+    });
+  </script>
+</body>
+</html>
